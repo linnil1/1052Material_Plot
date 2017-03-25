@@ -1,7 +1,8 @@
-from sympy import symbols, simplify, Function, integrate
-from sympy import solve, linsolve
-from sympy import degree, LC, LT, expand, LM
-from sympy.plotting import plot
+from sympy import symbols, simplify, Function, integrate, Basic, \
+                  solve, linsolve, degree, LC, LT, expand, LM,\
+                  plot
+
+from sympy.printing.str import StrPrinter
 
 class StepFunc(Function):
     nargs = 2
@@ -29,6 +30,19 @@ class StepFunc(Function):
         if x.subs({symbols('x'):hints['lim']}) < 0:
             return 0
         return x**n
+
+#    def _hashable_content(self): #hack
+#        x = symbols('x')
+#        return ( x-self.args[0], self.args[1] )
+
+    def sort_key(self, order=None): #hack
+        # https://github.com/sympy/sympy/blob/master/sympy/core/compatibility.py
+        return ( (4,0,'StepFunc'), (1, ((-self.args[0]).sort_key(),)), self.args[1].sort_key(), 1)
+        
+class StepFuncPrinter(StrPrinter):
+    def _print_StepFunc(self, expr):
+        return "<{}>{} ".format(expr.args[0],expr.args[1])
+Basic.__str__ = lambda self: StepFuncPrinter().doprint(self)
 
 def sectionSeparate(formula):
     a = set([ x-LM(f).args[0] for f in formula.args if len(f.atoms(StepFunc))])
@@ -115,6 +129,7 @@ if needsolve:
     print(ans)
     f = f.subs(ans)
     v,m = main(f)
+
 
 print("FORCE")
 print(f)

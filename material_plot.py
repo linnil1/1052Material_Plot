@@ -1,5 +1,5 @@
 from sympy import symbols, simplify, integrate, \
-    linsolve, degree, LC, LT, expand
+    solve, degree, LC, LT, expand
 from StepFunc import StepFunc
 from PlotPrint import plotPrint
 
@@ -35,24 +35,50 @@ def main(f):
     return v, m
 
 
-a, b, x = symbols("a b x")
-lmax = 10
-needsolve = False  # True
-# want=[(5,x-0,-1),(-50,(x-0.4,x-0.6)),(5,x-1,-1)]
-# want=[(a,x-0,-1),(-50,(x-0.3,x-0.5)),(b,x-1,-1)]
-# want=[(5,x-0,-1),(-1000*x,(x-0.4,x-0.5)),(-100+1000*x,(x-0.5,x-0.6)),(5,x-1,-1)]
-# want=[(2,x-0,-1),(1,x-1/3,-2),(1,x-2/3,-2),(-2,x-1,-1)]
-# want=[(-0.8,(x-3,x-7)),(a,x-4,-1),(b,x-6,-1),(-2,x-3,-1),(-2,x-7,-1)]
-# want=[(1,x-0,-1),(-0.8,(x-3,x-7)),(3.6,x-4,-1),(3.6,x-6,-1),(-3,x-2,-1),(-3,x-8,-1),(1,x-10,-1)]
-# want=[(-1,(x-0,x-0.5)),(a,x-0,-1),(b,x-0,-2)]
-# want=[(-1*x,(x-0,x-2/3)),(a,x-0,-1),(b,x-2/3,-1)]
-# want=[(-1*x,(x-0,x-1)),(0.074074074,x-0,-1),(a,x-1,-1),(b,x-1,-2)]
+x, c1, c2 = symbols("x c1 c2")
+
+"""
+# test if it is same
+want=[(5,x-0,-1),(-50,(x-0.4,x-0.6)),(5,x-1,-1)]
+want=[(a,x-0,-1),(-50,(x-0.4,x-0.6)),(b,x-1,-1)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+
+# use ploy x
+want=[(5,x-0,-1),(-1000*x,(x-0.4,x-0.5)),(-100+1000*x,(x-0.5,x-0.6)),(5,x-1,-1)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+
+# solve moment
+want=[(2,x-0,-1),(1,x-1/3,-2),(1,x-2/3,-2),(-2,x-1,-1)]
+want=[(-1,(x-0,x-1)),(a,x-0,-1),(b,x-0,-2)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+
+# lmax=10
+want=[(1,x-0,-1),(-0.8,(x-3,x-7)),(3.6,x-4,-1),(3.6,x-6,-1),(-3,x-2,-1),(-3,x-8,-1),(1,x-10,-1)]
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+
+# three boundary
+want=[(-1*x,(x-0,x-1)),(c,x-0,-1),(a,x-1,-1),(b,x-1,-2)]
+lmax = 1
+boundary_condition = [("v", lmax, 0),("v", 2/3, 0), ("m", lmax, 0)]
+"""
+
+a, b, c = symbols("Fa Fb Fc")
+want = []
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
 
 f = rawtoStep(want)
 v, m = main(f)
-if needsolve:
-    ans = linsolve([v.subs({x: lmax}), m.subs({x: lmax})], (a, b)) .args[0]
-    ans = [(a, ans[0]), (b, ans[1])]
+if boundary_condition:
+    bc = []
+    usesymbols = set()
+    for b in boundary_condition:
+        bc.append(eval(b[0]).subs({x: b[1]}) - b[2])
+        usesymbols.update(bc[-1].free_symbols)
+    ans = solve(bc, usesymbols)
     print(ans)
     f = f.subs(ans)
     v, m = main(f)

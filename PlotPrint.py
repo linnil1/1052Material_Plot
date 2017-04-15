@@ -3,7 +3,7 @@ from StepFunc import StepFunc
 
 
 def sectionSeparate(formula, lmax):
-    x = symbols('x')
+    x = symbols('x', real=True)
     pos = set([x - LM(f).args[0]
                for f in formula.args if len(f.atoms(StepFunc))])
     pos.update([0, lmax])
@@ -19,27 +19,25 @@ def sectionSeparate(formula, lmax):
 
 def localminmaxFind(formularr):
     localmm = set()
-    x = symbols('x')
+    x = symbols('x', real=True)
     print("LOCAL MIN_MAX")
     for formula in formularr:
-        # first
         expr = formula[0]
         bound = formula[1][1], formula[1][2]
-        fdiff = solve(expr.diff(x), x)
-        fdiff = [fd for fd in fdiff if bound[0] < fd < bound[1]]
-        localmm.update([(fd, expr.subs(x, fd)) for fd in fdiff])
-        # second
-        fdiff = solve(expr.diff(x).diff(x), x)
-        fdiff = [fd for fd in fdiff if bound[0] < fd < bound[1]]
-        localmm.update([(fd, expr.subs(x, fd)) for fd in fdiff])
 
-        # endpoint
-        if bound[0] not in fdiff:
-            localmm.update(
-                [(bound[0], expr.subs(x, bound[0]))])
-        if bound[1] not in fdiff:
-            localmm.update(
-                [(bound[1], expr.subs(x, bound[1]))])
+        # first diff and second diff
+        x_possible = solve(expr.diff(x), x) + \
+            solve(expr.diff(x).diff(x), x)
+        x_valid = [x for x in x_possible if bound[0] <= x <= bound[1]]
+
+        # bound position
+        if bound[0] not in x_valid:
+            x_valid.append(bound[0])
+        if bound[1] not in x_valid:
+            x_valid.append(bound[1])
+
+        # update
+        localmm.update([(xi, expr.subs({x: xi})) for xi in x_valid])
 
     for x, y in sorted(localmm):
         print("{} => {}".format(x, y))

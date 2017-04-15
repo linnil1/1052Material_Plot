@@ -26,7 +26,7 @@ class StepFunc(Function):
         x, n = self.args
         if n < 0:
             return 0
-        if x.subs({symbols('x'): hints['lim']}) < 0:
+        if x.subs({symbols('x', real=True): hints['lim']}) < 0:
             return 0
         return x**n
 

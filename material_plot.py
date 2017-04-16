@@ -1,5 +1,5 @@
 from sympy import symbols, simplify, integrate, \
-    solve, degree, LC, LT, expand
+    solve, degree, LC, LT, expand, init_printing
 from StepFunc import StepFunc
 from PlotPrint import plotPrint
 
@@ -20,8 +20,8 @@ def rawtoStep(rawlist):
                 poly -= LT(poly, x)
 
             # add to zero
-            # how about <0 cut = -LC(base, x) * StepFunc(bound[1], degree(base,
-            # x))
+            # how about <0
+            cut = -LC(base, x) * StepFunc(bound[1], degree(base, x))
             while base != 0:
                 base += cut.expand(lim=lmax, func=True)
                 f += cut
@@ -67,17 +67,15 @@ lmax = 1
 boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
 
 # default
-want = []
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
-"""
-
-# input
 a, b, c = symbols("Fa Fb Fc", real=True)
+latex = True
 show = "f,y,dy"
 want=[(a,x-0,-1),(-1,x-1/2,-1),(b,x-1,-1)]
 lmax = 1
 boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
+"""
+
+# input
 
 # cal
 f = rawtoStep(want)
@@ -106,12 +104,15 @@ if boundary_condition:
 # output
 show = show.split(',')
 if 'f' in show:
-    plotPrint(f, lmax, "Force", local=False, showplot=False)
+    plotPrint(f, lmax, "Force", tex=latex, local=False, showplot=False)
 if 'v' in show:
-    plotPrint(v, lmax, "Shear")
+    plotPrint(v, lmax, "Shear", tex=latex)
 if 'm' in show:
-    plotPrint(m, lmax, "Moment")
+    plotPrint(m, lmax, "Moment", tex=latex)
 if 'y' in show:
-    plotPrint(y, lmax, "Deflection")
+    plotPrint(y, lmax, "Deflection", tex=latex)
 if 'dy' in show:
-    plotPrint(dy, lmax, "Angel")
+    plotPrint(dy, lmax, "Angle", tex=latex)
+
+# %matplotlib inline
+# from IPython.display import Math

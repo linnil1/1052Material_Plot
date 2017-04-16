@@ -1,5 +1,6 @@
-from sympy import symbols, solve, LM, plot
+from sympy import symbols, solve, LM, plot, latex
 from StepFunc import StepFunc
+from IPython.display import display, Math
 
 
 def sectionSeparate(formula, lmax):
@@ -43,10 +44,14 @@ def localminmaxFind(formularr):
         print("{} => {}".format(x, y))
 
 
-def plotPrint(expr, lmax, title="", show=True, local=True, showplot=True):
+def plotPrint(expr, lmax, title="", tex=False, show=True, local=True,
+              showplot=True):
     if show:
         print(title)
-        print(expr)
+        if tex:
+            display(Math(latex(expr)))
+        else:
+            print(expr)
     arr = sectionSeparate(expr, lmax)
     if local and show:
         localminmaxFind(arr)

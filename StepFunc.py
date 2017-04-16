@@ -41,10 +41,18 @@ class StepFunc(Function):
                 self.args[1].sort_key(),
                 1)
 
+    def _sympystr(self, printer):
+        return "<{}>{} ".format(self.args[0], self.args[1])
 
+    def _latex(self, printer):
+        return r"\left \langle {} \right \rangle _ {{{}}}".format(
+            self.args[0], self.args[1])
+
+
+"""
 class StepFuncPrinter(StrPrinter):
     def _print_StepFunc(self, expr):
         return "<{}>{} ".format(expr.args[0], expr.args[1])
 
-
 Basic.__str__ = lambda self: StepFuncPrinter().doprint(self)
+"""

@@ -1,7 +1,7 @@
 from sympy import symbols, simplify, integrate, solve
 from PlotPrint import plotPrint
 from StepFunc import StepFunc
-from StepOperation import buildStep
+from StepOperation import buildStep, weightMul
 
 
 def rawtoStep(rawlist, lmax):
@@ -20,7 +20,9 @@ def rawtoStep(rawlist, lmax):
 
 
 x = symbols("x", real=True)
-show = "f,v,m,y,dy"
+show = "f,v,m,y,dy,p,dx"
+latex = False
+weight = []
 
 """
 # test if it is same
@@ -61,10 +63,24 @@ want=[(a,x-0,-1),(-1,(x-0,x-1)),(1,(x-1,x-2)),(-1,(x-2,x-3)),(b,x-3,-1)]
 lmax = 3
 boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
 
+# presure weight
+show = "f,v,p"
+want=[(a,x-0,-1),(-50,(x-0.4,x-0.6)),(b,x-1,-1)]
+weight=[(2,0,0.2),(-2,0.8,1)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+
+# bounded beam with tension
+show = "f,v,dx"
+want=[(a,x-0,-1),(-10,x-0.3,-1),(b,x-1,-1)]
+weight=[(0.2*1,0,0.3),(0.8*1,0.3,1)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("dx", lmax, 0)]
+
 # default
 a, b, c = symbols("Fa Fb Fc", real=True)
 latex = False
-show = "f,v,m,y,dy"
+show = "f,v,m,y,dy,p,dx"
 """
 
 # input
@@ -76,6 +92,8 @@ m = -integrate(v, x)
 c1, c2 = symbols("c1 c2", real=True)
 dy = integrate(m, x) + c1
 y = integrate(dy, x) + c2
+p = weightMul(v, weight, lmax)
+dx = integrate(p, x)
 
 # bc
 if boundary_condition:
@@ -84,6 +102,7 @@ if boundary_condition:
     for b in boundary_condition:
         bc.append(eval(b[0]).subs({x: b[1]}) - b[2])
         usesymbols.update(bc[-1].free_symbols)
+    print(bc)
     ans = solve(bc, usesymbols)
     print(ans)
     f = f.subs(ans)
@@ -91,6 +110,8 @@ if boundary_condition:
     m = m.subs(ans)
     dy = dy.subs(ans)
     y = y.subs(ans)
+    p = p.subs(ans)
+    dx = dx.subs(ans)
 
 
 # output
@@ -99,6 +120,10 @@ if 'f' in show:
     plotPrint(f, lmax, "Force", tex=latex, local=False, showplot=False)
 if 'v' in show:
     plotPrint(v, lmax, "Shear", tex=latex)
+if 'dx' in show:
+    plotPrint(dx, lmax, "x-displacement", tex=latex)
+if 'p' in show:
+    plotPrint(p, lmax, "Pressure", tex=latex)
 if 'm' in show:
     plotPrint(m, lmax, "Moment", tex=latex)
 if 'y' in show:

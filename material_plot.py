@@ -1,30 +1,19 @@
-from sympy import symbols, simplify, integrate, \
-    solve, degree, LC, LT, expand, init_printing
-from StepFunc import StepFunc
+from sympy import symbols, simplify, integrate, solve
 from PlotPrint import plotPrint
+from StepFunc import StepFunc
+from StepOperation import buildStep
 
 
-def rawtoStep(rawlist):
+def rawtoStep(rawlist, lmax):
     f = 0
     for rawtuple in rawlist:
         if len(rawtuple) == 3:
             f += rawtuple[0] * StepFunc(rawtuple[1], rawtuple[2])
         elif len(rawtuple) == 2:
             # add to want
-            poly, bound = rawtuple[0], rawtuple[1]
+            poly, bound = simplify(rawtuple[0]), rawtuple[1]
             base = 0
-            while poly != 0:
-                add = LC(poly, x) * StepFunc(bound[0], degree(poly, x))
-                base += add.expand(lim=lmax, func=True)
-                f += add
-                poly -= LT(poly, x)
-
-            # add to zero
-            # how about <0
-            cut = -LC(base, x) * StepFunc(bound[1], degree(base, x))
-            while base != 0:
-                base += cut.expand(lim=lmax, func=True)
-                f += cut
+            f += buildStep(poly, lmax, bound[0], bound[0], bound[1])
         else:
             raise ValueError
     return f
@@ -53,7 +42,7 @@ boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
 
 # lmax=10
 want=[(1,x-0,-1),(-0.8,(x-3,x-7)),(3.6,x-4,-1),(3.6,x-6,-1),(-3,x-2,-1),(-3,x-8,-1),(1,x-10,-1)]
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
+boundary_condition = []
 
 # three boundary
 want=[(-1*x,(x-0,x-1)),(c,x-0,-1),(a,x-1,-1),(b,x-1,-2)]
@@ -66,19 +55,22 @@ want=[(a,x-0,-1),(-1,x-1/2,-1),(b,x-1,-1)]
 lmax = 1
 boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
 
+# deflect with poly
+show = "f,y,dy"
+want=[(a,x-0,-1),(-1,(x-0,x-1)),(1,(x-1,x-2)),(-1,(x-2,x-3)),(b,x-3,-1)]
+lmax = 3
+boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
+
 # default
 a, b, c = symbols("Fa Fb Fc", real=True)
-latex = True
-show = "f,y,dy"
-want=[(a,x-0,-1),(-1,x-1/2,-1),(b,x-1,-1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
+latex = False
+show = "f,v,m,y,dy"
 """
 
 # input
 
 # cal
-f = rawtoStep(want)
+f = rawtoStep(want, lmax)
 v = -integrate(f, x)
 m = -integrate(v, x)
 c1, c2 = symbols("c1 c2", real=True)

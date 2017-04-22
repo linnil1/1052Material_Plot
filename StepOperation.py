@@ -1,5 +1,5 @@
 from StepFunc import StepFunc
-from sympy import degree, LC, symbols
+from sympy import degree, LC, symbols, Add
 
 
 def buildUp(expr, lmax, where):
@@ -30,3 +30,44 @@ def buildStep(expr, lmax, exprstart, start, end):
     expr, remain = buildUp(expr, lmax, start)
     expr += buildDown(remain, lmax, end)
     return expr
+
+
+def weightFill(weight, lmax):
+    weight.append((0, lmax, lmax))
+    full_wei = []
+    st = 0
+    for i, wei in enumerate(weight):
+        if st != wei[1]:
+            full_wei.append((1, st, wei[1]))
+        st = wei[2]
+        if st == lmax:
+            break
+        full_wei.append(wei)
+    return full_wei
+
+
+def weightMul(expr, wei, lmax):
+    x = symbols("x", real=True)
+    wei = weightFill(wei, lmax)
+    f = 0
+    for term in Add.make_args(expr):
+        mul, func = term.as_coeff_Mul()
+        if isinstance(func, StepFunc):
+            xfrm = - func.args[0] + x
+            expterm = term.expand(lim=lmax, func=True)
+        else:  # c1*x + c2
+            xfrm = 0
+            expterm = term
+        for w in wei:
+            # outside range
+            if w[2] <= xfrm:
+                continue
+            # partical inside range
+            elif w[1] <= xfrm <= w[2]:
+                f += buildStep(expterm * w[0],
+                               lmax, x, x - xfrm, x - w[2])
+            # inside range
+            else:
+                f += buildStep(expterm * w[0],
+                               lmax, x, x - w[1], x - w[2])
+    return f

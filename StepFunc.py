@@ -1,4 +1,4 @@
-from sympy import Function, Basic, simplify, symbols
+from sympy import Function, Basic, simplify, symbols, init_printing
 from sympy.printing.str import StrPrinter
 
 
@@ -48,6 +48,8 @@ class StepFunc(Function):
         return r"\left \langle {} \right \rangle _ {{{}}}".format(
             self.args[0], self.args[1])
 
+
+init_printing()
 
 """
 class StepFuncPrinter(StrPrinter):

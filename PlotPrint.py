@@ -1,6 +1,6 @@
 from sympy import symbols, solve, LM, plot, latex
 from StepFunc import StepFunc
-from IPython.display import display, Math
+from IPython.display import display
 
 
 def sectionSeparate(formula, lmax):
@@ -11,6 +11,7 @@ def sectionSeparate(formula, lmax):
     pos = list(sorted(pos))
     st = 0
     formularr = []
+    print("Line Segment Function")
     for en in pos[1:]:
         print(formula.expand(lim=st, func=True))
         formularr.append((formula.expand(lim=st, func=True), (x, st, en)))
@@ -44,16 +45,25 @@ def localminmaxFind(formularr):
         print("{} => {}".format(x, y))
 
 
-def plotPrint(expr, lmax, title="", tex=False, show=True, local=True,
+def plotPrint(expr, lmax, title="", show=True, local=True,
               showplot=True):
     if show:
         print(title)
-        if tex:
-            display(Math(latex(expr)))
+        if run_from_ipython():
+            display(expr)
         else:
             print(expr)
     arr = sectionSeparate(expr, lmax)
     if local and show:
         localminmaxFind(arr)
     if showplot:
+        print(arr)
         plot(*arr, title=title)
+
+
+def run_from_ipython():
+    try:
+        __IPYTHON__
+        return True
+    except NameError:
+        return False

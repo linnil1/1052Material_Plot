@@ -21,7 +21,6 @@ def rawtoStep(rawlist, lmax):
 
 x = symbols("x", real=True)
 show = "f,v,m,y,dy,p,dx"
-latex = False
 weight = []
 
 """
@@ -79,13 +78,18 @@ boundary_condition = [("v", lmax, 0), ("dx", lmax, 0)]
 
 # default
 a, b, c = symbols("Fa Fb Fc", real=True)
-latex = False
 show = "f,v,m,y,dy,p,dx"
 """
 
 # input
+a, b, c = symbols("Fa Fb Fc", real=True)
+show = "f,v,dx"
+want = [(a, x - 0, -1), (-10, x - 0.3, -1), (b, x - 1, -1)]
+weight = [(0.2 * 1, 0, 0.3), (0.8 * 1, 0.3, 1)]
+lmax = 1
+boundary_condition = [("v", lmax, 0), ("dx", lmax, 0)]
 
-# cal
+# main calc
 f = rawtoStep(want, lmax)
 v = -integrate(f, x)
 m = -integrate(v, x)
@@ -95,41 +99,43 @@ y = integrate(dy, x) + c2
 p = weightMul(v, weight, lmax)
 dx = integrate(p, x)
 
+# input handle
+show = show.split(',')
+use = show + [d[0] for d in boundary_condition]
+use = list(set(use))
+
+# output handle
+config = {
+    'f': {'title': "Force",
+          'data': f,
+          'arg': {'local': False, 'showplot': False}},
+    'v': {'title': "Shear", 'arg': {},
+          'data': v},
+    'p': {'title': "Pressure", 'arg': {},
+          'data': p},
+    'm': {'title': "Moment", 'arg': {},
+          'data': m},
+    'y': {'title': "Deflection", 'arg': {},
+          'data': y},
+    'dx': {'title': "X-displacement", 'arg': {},
+           'data': dx},
+    'dy': {'title': "Angle", 'arg': {},
+           'data': dy}}
+
+
 # bc
 if boundary_condition:
     bc = []
     usesymbols = set()
     for b in boundary_condition:
-        bc.append(eval(b[0]).subs({x: b[1]}) - b[2])
+        bc.append(config[b[0]]['data'].subs({x: b[1]}) - b[2])
         usesymbols.update(bc[-1].free_symbols)
-    print(bc)
     ans = solve(bc, usesymbols)
     print(ans)
-    f = f.subs(ans)
-    v = v.subs(ans)
-    m = m.subs(ans)
-    dy = dy.subs(ans)
-    y = y.subs(ans)
-    p = p.subs(ans)
-    dx = dx.subs(ans)
-
+    for i in use:
+        config[i]['data'] = config[i]['data'].subs(ans)
 
 # output
-show = show.split(',')
-if 'f' in show:
-    plotPrint(f, lmax, "Force", tex=latex, local=False, showplot=False)
-if 'v' in show:
-    plotPrint(v, lmax, "Shear", tex=latex)
-if 'dx' in show:
-    plotPrint(dx, lmax, "x-displacement", tex=latex)
-if 'p' in show:
-    plotPrint(p, lmax, "Pressure", tex=latex)
-if 'm' in show:
-    plotPrint(m, lmax, "Moment", tex=latex)
-if 'y' in show:
-    plotPrint(y, lmax, "Deflection", tex=latex)
-if 'dy' in show:
-    plotPrint(dy, lmax, "Angle", tex=latex)
-
-# %matplotlib inline
-# from IPython.display import Math
+for i in show:
+    data = config[i]
+    plotPrint(data['data'], lmax, data['title'], **data['arg'])

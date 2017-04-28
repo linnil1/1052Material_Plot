@@ -57,7 +57,7 @@ def plotPrint(expr, lmax, title="", show=True, local=True,
     if local and show:
         localminmaxFind(arr)
     if showplot:
-        print(arr)
+        # print(arr)
         plot(*arr, title=title)
 
 

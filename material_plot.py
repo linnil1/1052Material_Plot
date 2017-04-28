@@ -19,6 +19,14 @@ def rawtoStep(rawlist, lmax):
     return f
 
 
+def recurGet(var):
+    this = config[var]
+    if this['data'] != None:
+        return this['data']
+    this['data'] = this['formula']()
+    return this['data']
+
+
 x = symbols("x", real=True)
 show = "f,v,m,y,dy,p,dx"
 weight = []
@@ -84,20 +92,13 @@ show = "f,v,m,y,dy,p,dx"
 # input
 a, b, c = symbols("Fa Fb Fc", real=True)
 show = "f,v,dx"
-want = [(a, x - 0, -1), (-10, x - 0.3, -1), (b, x - 1, -1)]
-weight = [(0.2 * 1, 0, 0.3), (0.8 * 1, 0.3, 1)]
+want=[(a,x-0,-1),(-10,x-0.3,-1),(b,x-1,-1)]
+weight=[(0.2*1,0,0.3),(0.8*1,0.3,1)]
 lmax = 1
-boundary_condition = [("v", lmax, 0), ("dx", lmax, 0)]
+boundary_condition=[("v",lmax,0),("dx",lmax,0)]
 
 # main calc
 f = rawtoStep(want, lmax)
-v = -integrate(f, x)
-m = -integrate(v, x)
-c1, c2 = symbols("c1 c2", real=True)
-dy = integrate(m, x) + c1
-y = integrate(dy, x) + c2
-p = weightMul(v, weight, lmax)
-dx = integrate(p, x)
 
 # input handle
 show = show.split(',')
@@ -105,23 +106,33 @@ use = show + [d[0] for d in boundary_condition]
 use = list(set(use))
 
 # output handle
+c1, c2 = symbols("c1 c2", real=True)
 config = {
     'f': {'title': "Force",
           'data': f,
           'arg': {'local': False, 'showplot': False}},
     'v': {'title': "Shear", 'arg': {},
-          'data': v},
-    'p': {'title': "Pressure", 'arg': {},
-          'data': p},
+          'formula': lambda: -integrate(recurGet('f'), x),
+          'data': None},
     'm': {'title': "Moment", 'arg': {},
-          'data': m},
-    'y': {'title': "Deflection", 'arg': {},
-          'data': y},
-    'dx': {'title': "X-displacement", 'arg': {},
-           'data': dx},
+          'formula': lambda: -integrate(recurGet('v'), x),
+          'data': None},
     'dy': {'title': "Angle", 'arg': {},
-           'data': dy}}
+           'formula': lambda: -integrate(recurGet('m'), x) + c1,
+           'data': None},
+    'y': {'title': "Deflection", 'arg': {},
+          'formula': lambda: -integrate(recurGet('dy'), x) + c2,
+          'data': None},
+    'p': {'title': "Pressure", 'arg': {},
+          'formula': lambda: weightMul(recurGet('v'), weight, lmax),
+          'data': None},
+    'dx': {'title': "X-displacement", 'arg': {},
+           'formula': lambda: integrate(recurGet('p'), x),
+           'data': None},
+}
 
+for s in show:
+    recurGet(s)
 
 # bc
 if boundary_condition:

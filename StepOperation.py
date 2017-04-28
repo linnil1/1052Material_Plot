@@ -7,7 +7,7 @@ def buildUp(expr, lmax, where):
     f = 0
     remain = 0
     while expr != 0:
-        add = LC(expr, x) * StepFunc(where, degree(expr, x))
+        add = LC(expr, x) * StepFunc(x - where, degree(expr, x))
         expr -= add.expand(lim=lmax, func=True)
         remain += add.expand(lim=lmax, func=True)
         f += add
@@ -18,7 +18,7 @@ def buildDown(expr, lmax, where):
     x = symbols("x", real=True)
     f = 0
     while expr != 0:
-        cut = -LC(expr, x) * StepFunc(where, degree(expr, x))
+        cut = -LC(expr, x) * StepFunc(x - where, degree(expr, x))
         expr += cut.expand(lim=lmax, func=True)
         f += cut
     return f
@@ -55,7 +55,7 @@ def weightMul(expr, wei, lmax):
         expterm = term
         for m in Mul.make_args(term):
             if isinstance(m, StepFunc):
-                xfrm = - m.args[0] + x
+                xfrm = x - m.args[0]
                 expterm = term.expand(lim=lmax, func=True)
                 func = m
 
@@ -66,9 +66,9 @@ def weightMul(expr, wei, lmax):
             # partical inside range
             elif w[1] <= xfrm <= w[2]:
                 f += buildStep(expterm * w[0],
-                               lmax, x, x - xfrm, x - w[2])
+                               lmax, 0, xfrm, w[2])
             # inside range
             else:
                 f += buildStep(expterm * w[0],
-                               lmax, x, x - w[1], x - w[2])
+                               lmax, 0, w[1], w[2])
     return f

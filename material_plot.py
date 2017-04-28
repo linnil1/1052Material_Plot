@@ -2,13 +2,15 @@ from sympy import symbols, simplify, integrate, solve
 from PlotPrint import plotPrint
 from StepFunc import StepFunc
 from StepOperation import buildStep, weightMul
+import UserInput
 
 
 def rawtoStep(rawlist, lmax):
+    x = symbols("x", real=True)
     f = 0
     for rawtuple in rawlist:
         if len(rawtuple) == 3:
-            f += rawtuple[0] * StepFunc(rawtuple[1], rawtuple[2])
+            f += rawtuple[0] * StepFunc(x - rawtuple[1], rawtuple[2])
         elif len(rawtuple) == 2:
             # add to want
             poly, bound = simplify(rawtuple[0]), rawtuple[1]
@@ -27,111 +29,61 @@ def recurGet(var):
     return this['data']
 
 
-x = symbols("x", real=True)
-show = "f,v,m,y,dy,p,dx"
-weight = []
-
-"""
-# test if it is same
-want=[(5,x-0,-1),(-50,(x-0.4,x-0.6)),(5,x-1,-1)]
-want=[(a,x-0,-1),(-50,(x-0.4,x-0.6)),(b,x-1,-1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
-
-# use ploy x
-want=[(5,x-0,-1),(-1000*x,(x-0.4,x-0.5)),(-100+1000*x,(x-0.5,x-0.6)),(5,x-1,-1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
-
-# solve moment
-want=[(2,x-0,-1),(1,x-1/3,-2),(1,x-2/3,-2),(-2,x-1,-1)]
-want=[(-1,(x-0,x-1)),(a,x-0,-1),(b,x-0,-2)]
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
-
-# lmax=10
-want=[(1,x-0,-1),(-0.8,(x-3,x-7)),(3.6,x-4,-1),(3.6,x-6,-1),(-3,x-2,-1),(-3,x-8,-1),(1,x-10,-1)]
-boundary_condition = []
-
-# three boundary
-want=[(-1*x,(x-0,x-1)),(c,x-0,-1),(a,x-1,-1),(b,x-1,-2)]
-lmax = 1
-boundary_condition = [("v", lmax, 0),("m", 2/3, 0), ("m", lmax, 0)]
-
-# deflection
-show = "f,y,dy"
-want=[(a,x-0,-1),(-1,x-1/2,-1),(b,x-1,-1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
-
-# deflect with poly
-show = "f,y,dy"
-want=[(a,x-0,-1),(-1,(x-0,x-1)),(1,(x-1,x-2)),(-1,(x-2,x-3)),(b,x-3,-1)]
-lmax = 3
-boundary_condition = [("v", lmax, 0),("m", lmax, 0),("y",0,0),("y",lmax,0)]
-
-# presure weight
-show = "f,v,p"
-want=[(a,x-0,-1),(-50,(x-0.4,x-0.6)),(b,x-1,-1)]
-weight=[(2,0,0.2),(-2,0.8,1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("m", lmax, 0)]
-
-# bounded beam with tension
-show = "f,v,dx"
-want=[(a,x-0,-1),(-10,x-0.3,-1),(b,x-1,-1)]
-weight=[(0.2*1,0,0.3),(0.8*1,0.3,1)]
-lmax = 1
-boundary_condition = [("v", lmax, 0), ("dx", lmax, 0)]
-
-# default
-a, b, c = symbols("Fa Fb Fc", real=True)
-show = "f,v,m,y,dy,p,dx"
-"""
-
 # input
-a, b, c = symbols("Fa Fb Fc", real=True)
-show = "f,v,dx"
-want=[(a,x-0,-1),(-10,x-0.3,-1),(b,x-1,-1)]
-weight=[(0.2*1,0,0.3),(0.8*1,0.3,1)]
-lmax = 1
-boundary_condition=[("v",lmax,0),("dx",lmax,0)]
+show = UserInput.show.split(',')
+weight = getattr(UserInput, 'weight', [])
+want = UserInput.want
+lmax = getattr(UserInput, 'lmax', 1)
+boundary_condition = getattr(UserInput, 'boundary_condition', [])
 
-# main calc
-f = rawtoStep(want, lmax)
-
-# input handle
-show = show.split(',')
-use = show + [d[0] for d in boundary_condition]
-use = list(set(use))
+# extract needed data
+usevar = show + [d[0] for d in boundary_condition]
+usevar = list(set(usevar))
+raw_step = rawtoStep(want, lmax)
 
 # output handle
-c1, c2 = symbols("c1 c2", real=True)
+c1, c2, x = symbols("c1 c2 x", real=True)
 config = {
-    'f': {'title': "Force",
-          'data': f,
+    'F': {'title': "Force",
+          'data': raw_step,
           'arg': {'local': False, 'showplot': False}},
-    'v': {'title': "Shear", 'arg': {},
-          'formula': lambda: -integrate(recurGet('f'), x),
+    'V': {'title': "Shear", 'arg': {},
+          'formula': lambda: -integrate(recurGet('F'), x),
           'data': None},
-    'm': {'title': "Moment", 'arg': {},
-          'formula': lambda: -integrate(recurGet('v'), x),
+    'M': {'title': "Moment", 'arg': {},
+          'formula': lambda: -integrate(recurGet('V'), x),
           'data': None},
     'dy': {'title': "Angle", 'arg': {},
-           'formula': lambda: -integrate(recurGet('m'), x) + c1,
+           'formula': lambda: -integrate(recurGet('M'), x) + c1,
            'data': None},
     'y': {'title': "Deflection", 'arg': {},
           'formula': lambda: -integrate(recurGet('dy'), x) + c2,
           'data': None},
-    'p': {'title': "Pressure", 'arg': {},
-          'formula': lambda: weightMul(recurGet('v'), weight, lmax),
+    'T': {'title': "Torque",
+          'data': raw_step,
+          'arg': {'local': False, 'showplot': False}},
+
+    'Fint': {'title': "Internal Force", 'arg': {},
+             'formula': lambda: -integrate(recurGet('F'), x),
+             'data': None},
+    'P': {'title': "Pressure", 'arg': {},
+          'formula': lambda: weightMul(recurGet('Fint'), weight, lmax),
           'data': None},
     'dx': {'title': "X-displacement", 'arg': {},
-           'formula': lambda: integrate(recurGet('p'), x),
+           'formula': lambda: integrate(recurGet('P'), x),
            'data': None},
+
+    'Tint': {'title': "Internal Torque", 'arg': {},
+             'formula': lambda: -integrate(recurGet('T'), x),
+             'data': None},
+    'A': {'title': "Twist Angle", 'arg': {},
+          'formula': lambda: integrate(weightMul(
+              recurGet('Tint'), weight, lmax), x),
+          'data': None},
 }
 
-for s in show:
+# Go Integrate
+for s in usevar:
     recurGet(s)
 
 # bc
@@ -143,7 +95,7 @@ if boundary_condition:
         usesymbols.update(bc[-1].free_symbols)
     ans = solve(bc, usesymbols)
     print(ans)
-    for i in use:
+    for i in usevar:
         config[i]['data'] = config[i]['data'].subs(ans)
 
 # output

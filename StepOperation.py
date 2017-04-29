@@ -26,7 +26,7 @@ def buildDown(expr, lmax, where):
 
 def buildStep(expr, lmax, exprstart, start, end):
     x = symbols("x", real=True)
-    expr = expr.subs({x: exprstart})
+    expr = expr.subs({x: x-exprstart})
     expr, remain = buildUp(expr, lmax, start)
     expr += buildDown(remain, lmax, end)
     return expr

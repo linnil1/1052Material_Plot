@@ -1,6 +1,6 @@
-from sympy import symbols, solve, LM, plot, latex
+from sympy import symbols, solve, LM, plot, latex, N
 from StepFunc import StepFunc
-from IPython.display import display
+from IPython.display import display, Markdown
 
 
 def sectionSeparate(formula, lmax):
@@ -11,9 +11,9 @@ def sectionSeparate(formula, lmax):
     pos = list(sorted(pos))
     st = 0
     formularr = []
-    print("Line Segment Function")
+    # print("Line Segment Function")
     for en in pos[1:]:
-        print(formula.expand(lim=st, func=True))
+        # print(formula.expand(lim=st, func=True))
         formularr.append((formula.expand(lim=st, func=True), (x, st, en)))
         st = en
     return formularr
@@ -22,7 +22,6 @@ def sectionSeparate(formula, lmax):
 def localminmaxFind(formularr):
     localmm = set()
     x = symbols('x', real=True)
-    print("LOCAL MIN_MAX")
     for formula in formularr:
         expr = formula[0]
         bound = formula[1][1], formula[1][2]
@@ -39,26 +38,35 @@ def localminmaxFind(formularr):
             x_valid.append(bound[1])
 
         # update
-        localmm.update([(xi, expr.subs({x: xi})) for xi in x_valid])
+        for xi in x_valid:
+            nx = N(xi, 3)
+            ny = N(round(expr.subs({x: xi}), 5), 3)
+            localmm.update([(nx, ny)])
 
-    for x, y in sorted(localmm):
-        print("{} => {}".format(x, y))
+    return sorted(localmm)
 
 
 def plotPrint(expr, lmax, title="", show=True, local=True,
               showplot=True):
     if show:
-        print(title)
         if run_from_ipython():
+            display(Markdown("# "+title))
             display(expr)
         else:
             print(expr)
+            print(title)
     arr = sectionSeparate(expr, lmax)
-    if local and show:
-        localminmaxFind(arr)
     if showplot:
         # print(arr)
-        plot(*arr, title=title)
+        p = plot(*arr, title=title, show=False)
+        p = p.backend(p)
+        if local and show:
+            localmm = localminmaxFind(arr)
+            for lmm in localmm:
+                p.plt.text(*lmm, str(lmm))
+            # how to deal with overlap
+            # why adjustText no work
+        p.show()
 
 
 def run_from_ipython():

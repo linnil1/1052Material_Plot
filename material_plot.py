@@ -102,3 +102,4 @@ if boundary_condition:
 for i in show:
     data = config[i]
     plotPrint(data['data'], lmax, data['title'], **data['arg'])
+    print('-' * 16)

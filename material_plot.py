@@ -45,38 +45,36 @@ raw_step = rawtoStep(want, lmax)
 c1, c2, x = symbols("c1 c2 x", real=True)
 config = {
     'F': {'title': "Force",
-          'data': raw_step,
-          'arg': {'local': False, 'showplot': False}},
-    'V': {'title': "Shear", 'arg': {},
+          'data': raw_step},
+    'V': {'title': "Shear",
           'formula': lambda: -integrate(recurGet('F'), x),
           'data': None},
-    'M': {'title': "Moment", 'arg': {},
+    'M': {'title': "Moment",
           'formula': lambda: -integrate(recurGet('V'), x),
           'data': None},
-    'dy': {'title': "Angle", 'arg': {},
+    'dy': {'title': "Angle",
            'formula': lambda: -integrate(recurGet('M'), x) + c1,
            'data': None},
-    'y': {'title': "Deflection", 'arg': {},
+    'y': {'title': "Deflection",
           'formula': lambda: -integrate(recurGet('dy'), x) + c2,
           'data': None},
     'T': {'title': "Torque",
-          'data': raw_step,
-          'arg': {'local': False, 'showplot': False}},
+          'data': raw_step},
 
-    'Fint': {'title': "Internal Force", 'arg': {},
+    'Fint': {'title': "Internal Force",
              'formula': lambda: -integrate(recurGet('F'), x),
              'data': None},
-    'P': {'title': "Pressure", 'arg': {},
+    'P': {'title': "Pressure",
           'formula': lambda: weightMul(recurGet('Fint'), weight, lmax),
           'data': None},
-    'dx': {'title': "X-displacement", 'arg': {},
+    'dx': {'title': "X-displacement",
            'formula': lambda: integrate(recurGet('P'), x),
            'data': None},
 
-    'Tint': {'title': "Internal Torque", 'arg': {},
+    'Tint': {'title': "Internal Torque",
              'formula': lambda: -integrate(recurGet('T'), x),
              'data': None},
-    'A': {'title': "Twist Angle", 'arg': {},
+    'A': {'title': "Twist Angle",
           'formula': lambda: integrate(weightMul(
               recurGet('Tint'), weight, lmax), x),
           'data': None},
@@ -101,5 +99,5 @@ if boundary_condition:
 # output
 for i in show:
     data = config[i]
-    plotPrint(data['data'], lmax, data['title'], **data['arg'])
+    plotPrint(data['data'], lmax, data['title'])
     print('-' * 16)

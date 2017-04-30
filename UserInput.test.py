@@ -13,7 +13,6 @@ boundary_condition = [("V", lmax, 0), ("M", lmax, 0)]
 
 # solve moment
 show = "F,V,M"
-want=[(2,0,-1),(1,1/3,-2),(1,2/3,-2),(-2,1,-1)]
 want=[(-1,(0,1)),(a,0,-1),(b,0,-2)]
 lmax = 1
 boundary_condition = [("V", lmax, 0), ("M", lmax, 0)]

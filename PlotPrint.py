@@ -53,8 +53,8 @@ def plotPrint(expr, lmax, title="", show=True, local=True,
             display(Markdown("# "+title))
             display(expr)
         else:
-            print(expr)
             print(title)
+            print(expr)
     arr = sectionSeparate(expr, lmax)
     if showplot:
         # print(arr)

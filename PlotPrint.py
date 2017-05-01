@@ -26,8 +26,9 @@ def localminmaxFind(formularr):
         expr = formula[0]
         bound = formula[1][1], formula[1][2]
 
-        # first diff and second diff
-        x_possible = solve(expr.diff(x), x) + \
+        # first diff and second diff and y=0
+        x_possible = solve(expr, x) + \
+            solve(expr.diff(x), x) + \
             solve(expr.diff(x).diff(x), x)
         x_valid = [x for x in x_possible if bound[0] <= x <= bound[1]]
 

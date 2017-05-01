@@ -76,9 +76,11 @@ This cannot be applied when you want to get deflection, or deflection angle.
 
 Recommand running it in jupyter notebook
 
+and run `%run UserInput.py`
+
 In face, you can use command line
 
-` python3 material_plot.py `
+` python3 UserInput.py `
 
 # Result
 

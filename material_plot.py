@@ -2,7 +2,6 @@ from sympy import symbols, simplify, integrate, solve
 from PlotPrint import plotPrint
 from StepFunc import StepFunc
 from StepOperation import buildStep, weightMul
-import UserInput
 
 
 def rawtoStep(rawlist, lmax):
@@ -21,71 +20,63 @@ def rawtoStep(rawlist, lmax):
     return f
 
 
-def recurGet(var):
-    this = config[var]
-    if this['data'] != None:
+def goIntegrate(want, weight, lmax, usevar):
+    def recurGet(var):
+        this = config[var]
+        if this['data'] != None:
+            return this['data']
+        this['data'] = this['formula']()
         return this['data']
-    this['data'] = this['formula']()
-    return this['data']
+
+    raw_step = rawtoStep(want, lmax)
+    c1, c2, x = symbols("c1 c2 x", real=True)
+    config = {
+        'F': {'title': "Force",
+              'data': raw_step},
+        'V': {'title': "Shear",
+              'formula': lambda: -integrate(recurGet('F'), x),
+              'data': None},
+        'M': {'title': "Moment",
+              'formula': lambda: -integrate(recurGet('V'), x),
+              'data': None},
+        'dy': {'title': "Angle",
+               'formula': lambda: -integrate(recurGet('M'), x) + c1,
+               'data': None},
+        'y': {'title': "Deflection",
+              'formula': lambda: -integrate(recurGet('dy'), x) + c2,
+              'data': None},
+        'T': {'title': "Torque",
+              'data': raw_step},
+
+        'Fint': {'title': "Internal Force",
+                 'formula': lambda: -integrate(recurGet('F'), x),
+                 'data': None},
+        'P': {'title': "Pressure",
+              'formula': lambda: weightMul(recurGet('Fint'), weight, lmax),
+              'data': None},
+        'dx': {'title': "X-displacement",
+               'formula': lambda: integrate(recurGet('P'), x),
+               'data': None},
+
+        'Tint': {'title': "Internal Torque",
+                 'formula': lambda: -integrate(recurGet('T'), x),
+                 'data': None},
+        'A': {'title': "Twist Angle",
+              'formula': lambda: integrate(weightMul(
+                  recurGet('Tint'), weight, lmax), x),
+              'data': None},
+    }
+
+    # Go Integrate
+    for s in usevar:
+        recurGet(s)
+    return config
 
 
-# input
-show = UserInput.show.split(',')
-weight = getattr(UserInput, 'weight', [])
-want = UserInput.want
-lmax = getattr(UserInput, 'lmax', 1)
-boundary_condition = getattr(UserInput, 'boundary_condition', [])
-
-# extract needed data
-usevar = show + [d[0] for d in boundary_condition]
-usevar = list(set(usevar))
-raw_step = rawtoStep(want, lmax)
-
-# output handle
-c1, c2, x = symbols("c1 c2 x", real=True)
-config = {
-    'F': {'title': "Force",
-          'data': raw_step},
-    'V': {'title': "Shear",
-          'formula': lambda: -integrate(recurGet('F'), x),
-          'data': None},
-    'M': {'title': "Moment",
-          'formula': lambda: -integrate(recurGet('V'), x),
-          'data': None},
-    'dy': {'title': "Angle",
-           'formula': lambda: -integrate(recurGet('M'), x) + c1,
-           'data': None},
-    'y': {'title': "Deflection",
-          'formula': lambda: -integrate(recurGet('dy'), x) + c2,
-          'data': None},
-    'T': {'title': "Torque",
-          'data': raw_step},
-
-    'Fint': {'title': "Internal Force",
-             'formula': lambda: -integrate(recurGet('F'), x),
-             'data': None},
-    'P': {'title': "Pressure",
-          'formula': lambda: weightMul(recurGet('Fint'), weight, lmax),
-          'data': None},
-    'dx': {'title': "X-displacement",
-           'formula': lambda: integrate(recurGet('P'), x),
-           'data': None},
-
-    'Tint': {'title': "Internal Torque",
-             'formula': lambda: -integrate(recurGet('T'), x),
-             'data': None},
-    'A': {'title': "Twist Angle",
-          'formula': lambda: integrate(weightMul(
-              recurGet('Tint'), weight, lmax), x),
-          'data': None},
-}
-
-# Go Integrate
-for s in usevar:
-    recurGet(s)
-
-# bc
-if boundary_condition:
+def boundarySolve(config, boundary_condition, show):
+    x = symbols("x", real=True)
+    if not boundary_condition:
+        return
     bc = []
     usesymbols = set()
     for b in boundary_condition:
@@ -93,11 +84,22 @@ if boundary_condition:
         usesymbols.update(bc[-1].free_symbols)
     ans = solve(bc, usesymbols)
     print(ans)
-    for i in usevar:
+    for i in show:
         config[i]['data'] = config[i]['data'].subs(ans)
 
-# output
-for i in show:
-    data = config[i]
-    plotPrint(data['data'], lmax, data['title'])
-    print('-' * 16)
+
+def main(show="", lmax=1, want=[], boundary_condition=[], weight=[]):
+    # extract needed data
+    show = show.split(',')
+    usevar = show + [d[0] for d in boundary_condition]
+    usevar = list(set(usevar))
+
+    # main calculation
+    config = goIntegrate(want, weight, lmax, usevar)
+    boundarySolve(config, boundary_condition, show)
+
+    # output
+    for i in show:
+        data = config[i]
+        plotPrint(data['data'], lmax, data['title'])
+        print('-' * 16)

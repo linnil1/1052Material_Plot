@@ -1,3 +1,4 @@
+from material_plot import main
 from sympy import symbols
 a, b, c, x = symbols("Fa Fb Fc x", real=True)
 
@@ -9,3 +10,5 @@ lmax = 3
 boundary_condition = [("V", lmax, 0),("M", lmax, 0),("y",0,0),("y",lmax,0)]
 
 ## above
+
+main(show, lmax, want, boundary_condition, weight=[])

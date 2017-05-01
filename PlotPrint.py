@@ -30,7 +30,8 @@ def localminmaxFind(formularr):
         x_possible = solve(expr, x) + \
             solve(expr.diff(x), x) + \
             solve(expr.diff(x).diff(x), x)
-        x_valid = [x for x in x_possible if bound[0] <= x <= bound[1]]
+        x_valid = [x for x in x_possible if x.is_real and
+                   bound[0] <= x <= bound[1]]
 
         # bound position
         if bound[0] not in x_valid:
@@ -39,9 +40,10 @@ def localminmaxFind(formularr):
             x_valid.append(bound[1])
 
         # update
+        print(expr)
         for xi in x_valid:
             nx = N(xi, 3)
-            ny = N(round(expr.subs({x: xi}), 5), 3)
+            ny = N(round(N(expr.subs({x: xi})), 5), 3)
             localmm.update([(nx, ny)])
 
     return sorted(localmm)

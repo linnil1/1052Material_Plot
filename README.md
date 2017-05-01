@@ -98,6 +98,15 @@ plot expression and show min and max for you.
 
 ![demoPNG](http://imgur.com/TrOAc9K.png)
 
+# Demo
+
+You can copy some lines in `UserInput.test.py` to your `UserInput.py`,
+
+and you will know how to set the input.
+
+# TODO
+
+write test
 
 # Author
 

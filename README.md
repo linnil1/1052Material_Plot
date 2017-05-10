@@ -1,8 +1,31 @@
 # A EASY Plotting for Reaction of Material
 
-# Input
+# Install
+
+require Python3
+
+```
+pip3 install -r requirements.txt
+```
+
+# Input Usage
 
 Just edit UserInput.py
+
+or copy to jupyter notebook cell
+
+## example
+
+``` python
+from material_plot import main
+from sympy import symbols, Rational
+a, b, c, x = symbols("Fa Fb Fc x", real=True)
+show = "F,y,dy"
+want=[(a,0,-1),(-1,(0,1)),(1,(1,2)),(-1,(2,3)),(b,3,-1)]
+lmax = 3
+boundary_condition = [("V", lmax, 0),("M", lmax, 0),("y",0,0),("y",lmax,0)]
+main(show, lmax, want, boundary_condition, weight=[])
+```
 
 ## show
 ` show = "F,y,dy" `
@@ -78,7 +101,7 @@ Recommand running it in jupyter notebook
 
 and run `%run UserInput.py`
 
-In face, you can use command line
+In fact, you can use command line
 
 ` python3 UserInput.py `
 

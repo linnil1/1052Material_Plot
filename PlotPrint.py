@@ -40,7 +40,6 @@ def localminmaxFind(formularr):
             x_valid.append(bound[1])
 
         # update
-        print(expr)
         for xi in x_valid:
             nx = N(xi, 3)
             ny = N(round(N(expr.subs({x: xi})), 5), 3)

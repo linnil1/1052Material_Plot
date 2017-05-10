@@ -40,10 +40,10 @@ def goIntegrate(want, weight, lmax, usevar):
               'formula': lambda: -integrate(recurGet('V'), x),
               'data': None},
         'dy': {'title': "Angle",
-               'formula': lambda: -integrate(recurGet('M'), x) + c1,
+               'formula': lambda: integrate(recurGet('M'), x) + c1,
                'data': None},
         'y': {'title': "Deflection",
-              'formula': lambda: -integrate(recurGet('dy'), x) + c2,
+              'formula': lambda: integrate(recurGet('dy'), x) + c2,
               'data': None},
         'T': {'title': "Torque",
               'data': raw_step},
@@ -103,3 +103,5 @@ def main(show="", lmax=1, want=[], boundary_condition=[], weight=[]):
         data = config[i]
         plotPrint(data['data'], lmax, data['title'])
         print('-' * 16)
+
+    return config

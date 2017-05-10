@@ -1,3 +1,4 @@
+sympy
+matplotlib
 IPython
 jupyter
-sympy

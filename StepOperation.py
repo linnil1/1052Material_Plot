@@ -1,35 +1,32 @@
 from StepFunc import StepFunc
-from sympy import degree, LC, symbols, Add, Mul
+from sympy import degree, symbols, Add, Mul, factorial, simplify
 
 
-def buildUp(expr, lmax, where):
+def taylorExpand(expr, a):
     x = symbols("x", real=True)
-    f = 0
-    remain = 0
-    while expr != 0:
-        add = LC(expr, x) * StepFunc(x - where, degree(expr, x))
-        expr -= add.expand(lim=lmax, func=True)
-        remain += add.expand(lim=lmax, func=True)
-        f += add
-    return f, remain
+    if not expr:
+        return []
+    return [expr.diff(x, i).subs({x: a}) / factorial(i)
+            for i in range(degree(expr, x) + 1)]
 
 
-def buildDown(expr, lmax, where):
+def taylorBuild(exparr, a):
     x = symbols("x", real=True)
-    f = 0
-    while expr != 0:
-        cut = -LC(expr, x) * StepFunc(x - where, degree(expr, x))
-        expr += cut.expand(lim=lmax, func=True)
-        f += cut
-    return f
+    return sum(n * (x - a) ** i for i, n in enumerate(exparr))
+
+
+def taylorBuildStep(expr, a):
+    x = symbols("x", real=True)
+    exparr = taylorExpand(expr, a)
+    return sum(n * StepFunc(x - a, i) for i, n in enumerate(exparr))
 
 
 def buildStep(expr, lmax, exprstart, start, end):
     x = symbols("x", real=True)
-    expr = expr.subs({x: x-exprstart})
-    expr, remain = buildUp(expr, lmax, start)
-    expr += buildDown(remain, lmax, end)
-    return expr
+    expr = simplify(expr).subs({x: x - exprstart}).expand(lim=lmax, func=True)
+    f = taylorBuildStep(expr, start)
+    f -= taylorBuildStep(simplify(f).expand(lim=lmax, func=True), end)
+    return f
 
 
 def weightFill(weight, lmax):

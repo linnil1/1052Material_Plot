@@ -73,7 +73,7 @@ def goIntegrate(want, weight, lmax, usevar):
     return config
 
 
-def boundarySolve(config, boundary_condition, show):
+def boundarySolve(config, boundary_condition, showvar):
     x = symbols("x", real=True)
     if not boundary_condition:
         return
@@ -84,22 +84,22 @@ def boundarySolve(config, boundary_condition, show):
         usesymbols.update(bc[-1].free_symbols)
     ans = solve(bc, usesymbols)
     print(ans)
-    for i in show:
+    for i in showvar:
         config[i]['data'] = config[i]['data'].subs(ans)
 
 
 def main(show="", lmax=1, want=[], boundary_condition=[], weight=[]):
     # extract needed data
-    show = show.split(',')
-    usevar = show + [d[0] for d in boundary_condition]
+    showvar = show.split(',')
+    usevar = showvar + [d[0] for d in boundary_condition]
     usevar = list(set(usevar))
 
     # main calculation
     config = goIntegrate(want, weight, lmax, usevar)
-    boundarySolve(config, boundary_condition, show)
+    boundarySolve(config, boundary_condition, showvar)
 
     # output
-    for i in show:
+    for i in showvar:
         data = config[i]
         plotPrint(data['data'], lmax, data['title'])
         print('-' * 16)

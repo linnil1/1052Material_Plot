@@ -127,9 +127,13 @@ You can copy some lines in `UserInput.test.py` to your `UserInput.py`,
 
 and you will know how to set the input.
 
+# UnitTest
+
+` python3 data_unit_test.py -v`
+
 # TODO
 
-write test
+write test for plot
 
 # Author
 

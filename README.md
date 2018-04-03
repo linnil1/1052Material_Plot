@@ -1,11 +1,13 @@
-# A EASY Plotting for Reaction of Material
+# Plot internal force diagram of Material
 
 # Install
 
-require Python3
+require Python3.5
 
 ```
-pip3 install -r requirements.txt
+git clone https://github.com/linnil1/1052Material_Plot.git
+cd 1052Material_Plot
+pip3 install -e .
 ```
 
 # Input Usage
@@ -21,16 +23,18 @@ from material_plot import main
 from sympy import symbols, Rational
 a, b, c, x = symbols("Fa Fb Fc x", real=True)
 show = "F,y,dy"
-want=[(a,0,-1),(-1,(0,1)),(1,(1,2)),(-1,(2,3)),(b,3,-1)]
-lmax = 3
-boundary_condition = [("V", lmax, 0),("M", lmax, 0),("y",0,0),("y",lmax,0)]
-main(show, lmax, want, boundary_condition, weight=[])
+external=[(a,0,-1),(-1,(0,1)),(1,(1,2)),(-1,(2,3)),(b,3,-1)]
+length = 3
+boundary_condition = [("V", length, 0),("M", length, 0),("y",0,0),("y",length,0)]
+main(show, length, external, boundary_condition, weight=[])
 ```
 
 ## show
 ` show = "F,y,dy" `
 
-means plot F(force) and Y(Y-displacement) and dy(slope of Y)
+means plot diagram of F(force) and Y(Y-displacement) and dy(slope of Y)
+
+Use comma `,` to separate each vatiable.
 
 There are the list of variable name
 
@@ -48,17 +52,17 @@ There are the list of variable name
 | Tint | Internal Torque |
 | A    | Twist Angle |
 
-## lmax
+## length
 
-` lmax = 3 `
+` length = 3 `
 
 Tell the length of the structure
 
-## want
+## external
 
-` want=[(a,0,-1),(-1,(0,1)),(1,(1,2)),(-1,(2,3)),(b,3,-1)] `
+` exernal=[(a,0,-1),(-1,(0,1)),(1,(1,2)),(-1,(2,3)),(b,3,-1)] `
 
-The Force (or Torque) that question give.
+The External Force (or Torque or somewhat) that question given.
 
 ` (a,0,-1) ` Means $$ a \left \langle x - 0 \right \rangle _ {-1} $$
 
@@ -66,20 +70,20 @@ Which `a` is unknown.
 
 ` (-1,(0,1)) ` means  a continuous force `y = -1` from `0` to `1`
 
-` (-x+3,(1,2)) ` means  a continuous force `y = -(x-1)+3` from `1` to `2`
+` (-x+3,(1,2)) ` means  a continuous force `y = -(x-1)+3` where `x` from `1` to `2`
 
 
 ## boundary
 
-` boundary_condition = [("V", lmax, 0),("M", lmax, 0),("y",0,0),("y",lmax,0)] `
+` boundary = [("V", length, 0),("M", length, 0),("y",0,0),("y",length,0)] `
 
 The boundary condition we need to solve unknowns.
 
-` ("V", lmax, 0) ` 
-means Shear Force should be `0` when `x=lmax`
+` ("V", length, 0) ` 
+means Shear Force should be `0` when `x=length`
 
 
-If there are not exist any unknown, set `boundary_condition=[]` .
+If there are not exist any unknown, set `boundary=[]` .
 
  
 ## weight
@@ -99,11 +103,9 @@ This cannot be applied when you want to get deflection, or deflection angle.
 
 Recommand running it in jupyter notebook
 
-and run `%run UserInput.py`
+` python3 -m notebook `
 
-In fact, you can use command line
-
-` python3 UserInput.py `
+In fact, you can use it in command line.
 
 # Result
 
@@ -123,7 +125,9 @@ plot expression and show min and max for you.
 
 # Demo
 
-You can copy some lines in `UserInput.test.py` to your `UserInput.py`,
+And open `example.ipynb` for some exmaples.
+
+Or just execute `UserInput.py`,
 
 and you will know how to set the input.
 

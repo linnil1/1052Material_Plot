@@ -23,7 +23,7 @@ def rawtoStep(rawlist, lmax):
 def goIntegrate(want, weight, lmax, usevar):
     def recurGet(var):
         this = config[var]
-        if this['data'] != None:
+        if this['data']:
             return this['data']
         this['data'] = this['formula']()
         return this['data']
@@ -88,20 +88,20 @@ def boundarySolve(config, boundary_condition, showvar):
         config[i]['data'] = config[i]['data'].subs(ans)
 
 
-def main(show="", lmax=1, want=[], boundary_condition=[], weight=[]):
+def main(show="", length=1, external=[], boundary=[], weight=[]):
     # extract needed data
     showvar = show.split(',')
-    usevar = showvar + [d[0] for d in boundary_condition]
+    usevar = showvar + [d[0] for d in boundary]
     usevar = list(set(usevar))
 
     # main calculation
-    config = goIntegrate(want, weight, lmax, usevar)
-    boundarySolve(config, boundary_condition, showvar)
+    config = goIntegrate(external, weight, length, usevar)
+    boundarySolve(config, boundary, showvar)
 
     # output
     for i in showvar:
         data = config[i]
-        plotPrint(data['data'], lmax, data['title'])
+        plotPrint(data['data'], length, data['title'])
         print('-' * 16)
 
     return config

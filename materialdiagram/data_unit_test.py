@@ -2,10 +2,10 @@
 
 import unittest
 import numpy
-from StepFunc import StepFunc
+from .StepFunc import StepFunc
 from sympy import symbols, Rational, simplify, integrate
-from material_plot import boundarySolve, rawtoStep, goIntegrate
-from StepOperation import weightMul
+from .material_plot import boundarySolve, rawtoStep, goIntegrate
+from .StepOperation import weightMul
 
 
 class TestStep(unittest.TestCase):

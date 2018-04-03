@@ -1,7 +1,7 @@
 from sympy import symbols, simplify, integrate, solve
-from PlotPrint import plotPrint
-from StepFunc import StepFunc
-from StepOperation import buildStep, weightMul
+from .PlotPrint import plotPrint
+from .StepFunc import StepFunc
+from .StepOperation import buildStep, weightMul
 
 
 def rawtoStep(rawlist, lmax):

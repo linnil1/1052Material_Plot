@@ -1,4 +1,4 @@
-from StepFunc import StepFunc
+from .StepFunc import StepFunc
 from sympy import degree, symbols, Add, Mul, factorial, simplify
 
 

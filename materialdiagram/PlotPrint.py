@@ -1,5 +1,5 @@
 from sympy import symbols, solve, LM, plot, latex, N, Add, Mul, sign
-from StepFunc import StepFunc
+from .StepFunc import StepFunc
 from IPython.display import display, Markdown
 
 

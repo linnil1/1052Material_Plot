@@ -1,4 +1,4 @@
-from material_plot import main
+from materialdiagram import main
 from sympy import symbols, Rational
 a, b, c, x = symbols("Fa Fb Fc x", real=True)
 

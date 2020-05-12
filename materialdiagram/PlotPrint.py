@@ -108,6 +108,8 @@ def localminmaxDraw(arr, ax):
     localmm = localminmaxFind(arr)
     for lmm in localmm:
         ax.text(*lmm, str(lmm))
+        ax.set_ylim(top=max(float(lmm[1]), ax.get_ylim()[1]),
+                 bottom=min(float(lmm[1]), ax.get_ylim()[0]))
     # how to deal with overlap
     # why adjustText no work
 
@@ -125,11 +127,12 @@ def plotPrint(expr, lmax, title=""):
     arr = sectionSeparate(expr, lmax)
     p = plot(*arr, title=title, show=False, line_color='b')
     p = p.backend(p)
+    ax = p.ax[0]
 
     # some additional thing
-    localminmaxDraw(arr, p.ax)
-    sectionContinuous(arr, p.ax)
-    impluseDraw(expr, p.ax)
+    localminmaxDraw(arr, ax)
+    sectionContinuous(arr, ax)
+    impluseDraw(expr, ax)
 
     p.show()
 
